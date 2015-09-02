@@ -1,16 +1,17 @@
 {
-  "name": "mongodb",
-  "version": "2.0.42",
-  "description": "MongoDB legacy driver emulation layer on top of mongodb-core",
+  "name": "mb-mongodb",
+  "version": "1.0.1",
+  "description": "MongoDB legacy driver emulation layer on top of mongodb-core, for mongobooster",
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git@github.com:mongodb/node-mongodb-native.git"
+    "url": "git@github.com:flyingfisher/node-mongodb-native.git"
   },
   "keywords": [
     "mongodb",
     "driver",
-    "legacy"
+    "legacy",
+    "mongobooster"
   ],
   "dependencies": {
       "mongodb-core": "1.2.11"
@@ -30,11 +31,11 @@
     , "co": "4.5.4"
     , "bluebird": "2.9.27"
   },
-  "author": "Christian Kvalheim",
+  "author": "Christian Kvalheim, flyingfisher",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/mongodb/node-mongodb-native/issues"
+    "url": "https://github.com/flyingfisher/node-mongodb-native/issues"
   },
   "scripts": { "test" : "node test/runner.js -t functional" },
-  "homepage": "https://github.com/mongodb/node-mongodb-native"
+  "homepage": "https://github.com/flyingfisher/node-mongodb-native"
 }
