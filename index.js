@@ -22,7 +22,7 @@ connect.Logger = core.Logger;
 connect.Cursor = require('./lib/cursor');
 
 // BSON types exported
-connect.BSON = core.BSON;
+connect.BSON = core.BSON.BSONPure.BSON;
 connect.Binary = core.BSON.Binary;
 connect.Code = core.BSON.Code;
 connect.DBRef = core.BSON.DBRef;
