@@ -538,7 +538,7 @@ exports.shouldCreateComplexIndexOnTwoFields = {
             test.equal(4, items.length);
 
             // Peform a query, with explain to show we hit the query
-            collection.find({a:2}, {explain:true}).toArray(function(err, explanation) {
+            collection.find({a:2}).explain(function(err, explanation) {
               test.equal(null, err);
               test.ok(explanation != null);
 
@@ -586,7 +586,7 @@ exports.shouldCreateASimpleIndexOnASingleField = {
           test.equal("a_1", indexName);
 
           // Peform a query, with explain to show we hit the query
-          collection.find({a:2}, {explain:true}).toArray(function(err, explanation) {
+          collection.find({a:2}).explain(function(err, explanation) {
             test.equal(null, err);
             test.ok(explanation != null);
 
@@ -641,7 +641,7 @@ exports.createIndexExample3 = {
             test.equal(4, items.length);
 
             // Peform a query, with explain to show we hit the query
-            collection.find({a:2}, {explain:true}).toArray(function(err, explanation) {
+            collection.find({a:2}).explain(function(err, explanation) {
               test.equal(null, err);
               test.ok(explanation != null);
 
@@ -925,7 +925,7 @@ exports.shouldCreateComplexEnsureIndex = {
             test.equal(4, items.length);
 
             // Peform a query, with explain to show we hit the query
-            collection.find({a:2}, {explain:true}).toArray(function(err, explanation) {
+            collection.find({a:2}).explain(function(err, explanation) {
               test.equal(null, err);
               test.ok(explanation != null);
 
@@ -978,7 +978,7 @@ exports.ensureIndexExampleWithCompountIndex = {
             test.equal(4, items.length);
 
             // Peform a query, with explain to show we hit the query
-            collection.find({a:2}, {explain:true}).toArray(function(err, explanation) {
+            collection.find({a:2}).explain(function(err, explanation) {
               test.equal(null, err);
               test.ok(explanation != null);
 
@@ -1065,9 +1065,9 @@ exports.shouldPeformASimpleExplainQuery = {
         test.equal(null, err);
 
         // Peform a simple find and return all the documents
-        collection.find({}, {explain:true}).toArray(function(err, docs) {
+        collection.find({}).explain(function(err, explain) {
           test.equal(null, err);
-          test.equal(1, docs.length);
+          test.ok(explain != null);
 
           db.close();
           test.done();
@@ -1107,14 +1107,15 @@ exports.shouldPeformASimpleLimitSkipQuery = {
         test.equal(null, err);
 
         // Peform a simple find and return all the documents
-        collection.find({}, {skip:1, limit:1, fields:{b:1}}).toArray(function(err, docs) {
-          test.equal(null, err);
-          test.equal(1, docs.length);
-          test.equal(null, docs[0].a);
-          test.equal(2, docs[0].b);
+        collection.find({})
+          .skip(1).limit(1).project({b:1}).toArray(function(err, docs) {
+            test.equal(null, err);
+            test.equal(1, docs.length);
+            test.equal(null, docs[0].a);
+            test.equal(2, docs[0].b);
 
-          db.close();
-          test.done();
+            db.close();
+            test.done();
         });
       });
     });
@@ -3790,7 +3791,7 @@ exports.shouldCreateOnDbComplexIndexOnTwoFields = {
             test.equal(4, items.length);
 
             // Peform a query, with explain to show we hit the query
-            collection.find({a:2}, {explain:true}).toArray(function(err, explanation) {
+            collection.find({a:2}).explain(function(err, explanation) {
               test.equal(null, err);
               test.ok(explanation != null);
 
@@ -3844,7 +3845,7 @@ exports.shouldCreateComplexEnsureIndexDb = {
             test.equal(4, items.length);
 
             // Peform a query, with explain to show we hit the query
-            collection.find({a:2}, {explain:true}).toArray(function(err, explanation) {
+            collection.find({a:2}).explain(function(err, explanation) {
               test.equal(null, err);
               test.ok(explanation != null);
 
@@ -3867,7 +3868,7 @@ exports.shouldCreateComplexEnsureIndexDb = {
  * @ignore
  */
 exports.shouldCorrectlyDropTheDatabase = {
-  metadata: { requires: { topology: ['single', 'replicaset', 'sharded', 'ssl', 'heap', 'wiredtiger'] } },
+  metadata: { requires: { topology: ['single'] } },
 
   // The actual test we wish to run
   test: function(configuration, test) {
@@ -6188,80 +6189,86 @@ exports.shouldCorrectlyExecuteGridStoreList = {
       // Open a file for writing
       var gridStore = new GridStore(db, fileId, "foobar2", "w");
       gridStore.open(function(err, gridStore) {
+        test.equal(null, err);
 
-        // Write some content to the file
-        gridStore.write("hello world!", function(err, gridStore) {
-          // Flush to GridFS
-          gridStore.close(function(err, result) {
+        gridStore.chunkCollection().deleteMany({}, function() {
+          gridStore.collection().deleteMany({}, function() {
 
-            // List the existing files
-            GridStore.list(db, function(err, items) {
-              var found = false;
-              items.forEach(function(filename) {
-                if(filename == 'foobar2') found = true;
-              });
+            // Write some content to the file
+            gridStore.write("hello world!", function(err, gridStore) {
+              // Flush to GridFS
+              gridStore.close(function(err, result) {
 
-              test.ok(items.length >= 1);
-              test.ok(found);
-            });
+                // List the existing files
+                GridStore.list(db, function(err, items) {
+                  var found = false;
+                  items.forEach(function(filename) {
+                    if(filename == 'foobar2') found = true;
+                  });
 
-            // List the existing files but return only the file ids
-            GridStore.list(db, {id:true}, function(err, items) {
-              var found = false;
-              items.forEach(function(id) {
-                test.ok(typeof id == 'object');
-              });
+                  test.ok(items.length >= 1);
+                  test.ok(found);
+                });
 
-              test.ok(items.length >= 1);
-            });
+                // List the existing files but return only the file ids
+                GridStore.list(db, {id:true}, function(err, items) {
+                  var found = false;
+                  items.forEach(function(id) {
+                    test.ok(typeof id == 'object');
+                  });
 
-            // List the existing files in a specific root collection
-            GridStore.list(db, 'fs', function(err, items) {
-              var found = false;
-              items.forEach(function(filename) {
-                if(filename == 'foobar2') found = true;
-              });
+                  test.ok(items.length >= 1);
+                });
 
-              test.ok(items.length >= 1);
-              test.ok(found);
-            });
+                // List the existing files in a specific root collection
+                GridStore.list(db, 'fs', function(err, items) {
+                  var found = false;
+                  items.forEach(function(filename) {
+                    if(filename == 'foobar2') found = true;
+                  });
 
-            // List the existing files in a different root collection where the file is not located
-            GridStore.list(db, 'my_fs', function(err, items) {
-              var found = false;
-              items.forEach(function(filename) {
-                if(filename == 'foobar2') found = true;
-              });
+                  test.ok(items.length >= 1);
+                  test.ok(found);
+                });
 
-              test.ok(items.length >= 0);
-              test.ok(!found);
+                // List the existing files in a different root collection where the file is not located
+                GridStore.list(db, 'my_fs', function(err, items) {
+                  var found = false;
+                  items.forEach(function(filename) {
+                    if(filename == 'foobar2') found = true;
+                  });
 
-              // Specify seperate id
-              var fileId2 = new ObjectID();
-              // Write another file to GridFS
-              var gridStore2 = new GridStore(db, fileId2, "foobar3", "w");
-              gridStore2.open(function(err, gridStore) {
-                // Write the content
-                gridStore2.write('my file', function(err, gridStore) {
-                  // Flush to GridFS
-                  gridStore.close(function(err, result) {
+                  test.ok(items.length >= 0);
+                  test.ok(!found);
 
-                    // List all the available files and verify that our files are there
-                    GridStore.list(db, function(err, items) {
-                      var found = false;
-                      var found2 = false;
+                  // Specify seperate id
+                  var fileId2 = new ObjectID();
+                  // Write another file to GridFS
+                  var gridStore2 = new GridStore(db, fileId2, "foobar3", "w");
+                  gridStore2.open(function(err, gridStore) {
+                    // Write the content
+                    gridStore2.write('my file', function(err, gridStore) {
+                      // Flush to GridFS
+                      gridStore.close(function(err, result) {
 
-                      items.forEach(function(filename) {
-                        if(filename == 'foobar2') found = true;
-                        if(filename == 'foobar3') found2 = true;
+                        // List all the available files and verify that our files are there
+                        GridStore.list(db, function(err, items) {
+                          var found = false;
+                          var found2 = false;
+
+                          items.forEach(function(filename) {
+                            if(filename == 'foobar2') found = true;
+                            if(filename == 'foobar3') found2 = true;
+                          });
+
+                          test.ok(items.length >= 2);
+                          test.ok(found);
+                          test.ok(found2);
+
+                          db.close();
+                          test.done();
+                        });
                       });
-
-                      test.ok(items.length >= 2);
-                      test.ok(found);
-                      test.ok(found2);
-
-                      db.close();
-                      test.done();
                     });
                   });
                 });
@@ -6332,7 +6339,7 @@ exports.shouldCorrectlyReadlinesAndPutLines = {
  * @ignore
  */
 exports.shouldCorrectlyUnlink = {
-  metadata: { requires: { topology: ['single', 'replicaset', 'sharded', 'ssl', 'heap', 'wiredtiger'] } },
+  metadata: { requires: { topology: ['single'] } },
 
   // The actual test we wish to run
   test: function(configuration, test) {

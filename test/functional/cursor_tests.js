@@ -326,7 +326,10 @@ exports.shouldCorrectlyExecuteSortOnCursor = {
           test.deepEqual([['a', "asc"]], cursor.sortValue);finished();
 
           cursor = collection.find().sort([['a', -1], ['b', 1]]);
-          test.deepEqual([['a', -1], ['b', 1]], cursor.sortValue);finished();
+          var entries = cursor.sortValue.entries();
+          test.deepEqual(['a', -1], entries.next().value);
+          test.deepEqual(['b', 1], entries.next().value);
+          finished();
 
           cursor = collection.find().sort('a', 1).sort('a', -1);
           test.deepEqual([['a', -1]], cursor.sortValue);finished();
@@ -2013,6 +2016,43 @@ exports.shouldAwaitData = {
 /**
  * @ignore
  */
+exports.shouldAwaitDataWithDocumentsAvailable = {
+  // Add a tag that our runner can trigger on
+  // in this case we are setting that node needs to be higher than 0.10.X to run
+  metadata: { requires: { topology: ['single', 'replicaset', 'sharded', 'ssl', 'heap', 'wiredtiger'] } },
+
+  // The actual test we wish to run
+  test: function(configuration, test) {
+    // http://www.mongodb.org/display/DOCS/Tailable+Cursors
+    var db = configuration.newDbInstance(configuration.writeConcernMax(), {poolSize:1, auto_reconnect:false});
+
+    db.open(function(err, db) {
+      var options = { capped: true, size: 8};
+      db.createCollection('should_await_data_no_docs', options, function(err, collection) {
+        // Create cursor with awaitdata, and timeout after the period specified
+        var cursor = collection.find({}, {tailable:true, awaitdata:true, numberOfRetries:1});
+        var rewind = cursor.rewind;
+        var called = false;
+        cursor.rewind = function() {
+          called = true;
+        }
+        
+        cursor.each(function(err, result) {
+          if(err != null) {
+            test.ok(called);
+            cursor.rewind = rewind;
+            db.close();
+            test.done();
+          }
+        });
+      });
+    });
+  }
+}
+
+/**
+ * @ignore
+ */
 exports.shouldAwaitDataUsingCursorFlag = {
   // Add a tag that our runner can trigger on
   // in this case we are setting that node needs to be higher than 0.10.X to run
@@ -2070,6 +2110,39 @@ exports.shouldNotAwaitDataWhenFalse = {
 
           db.close();
           test.done();
+        });
+      });
+    });
+  }
+}
+
+/**
+ * @ignore
+ */
+exports['Should correctly retry tailable cursor connection'] = {
+  // Add a tag that our runner can trigger on
+  // in this case we are setting that node needs to be higher than 0.10.X to run
+  metadata: { requires: { topology: ['single', 'replicaset', 'sharded', 'ssl', 'heap', 'wiredtiger'] } },
+
+  // The actual test we wish to run
+  test: function(configuration, test) {
+    // http://www.mongodb.org/display/DOCS/Tailable+Cursors
+    var db = configuration.newDbInstance(configuration.writeConcernMax(), {poolSize:1, auto_reconnect:false});
+
+    db.open(function(err, db) {
+      var options = { capped: true, size: 8};
+      db.createCollection('should_await_data', options, function(err, collection) {
+        collection.insert({a:1}, configuration.writeConcernMax(), function(err, result) {
+          var s = new Date();
+          // Create cursor with awaitdata, and timeout after the period specified
+          collection.find({}, {tailable:true, awaitdata:true, numberOfRetries:3, tailableRetryInterval:1000}).each(function(err, result) {
+            if(err != null) {
+              var e = new Date();
+              test.ok((e.getTime() - s.getTime()) >= 3000);
+              db.close();
+              test.done();
+            }
+          });
         });
       });
     });

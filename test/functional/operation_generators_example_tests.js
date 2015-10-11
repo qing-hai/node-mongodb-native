@@ -225,7 +225,7 @@ exports.shouldCreateComplexIndexOnTwoFieldsWithGenerators = {
       test.equal(4, items.length);
 
       // Peform a query, with explain to show we hit the query
-      var explanation = yield collection.find({a:2}, {explain:true}).toArray()
+      var explanation = yield collection.find({a:2}).explain()
       test.ok(explanation != null);
 
       db.close();
@@ -513,7 +513,7 @@ exports.shouldCreateComplexEnsureIndexWithGenerators = {
       test.equal(4, items.length);
 
       // Peform a query, with explain to show we hit the query
-      var explanation = yield collection.find({a:2}, {explain:true}).toArray();
+      var explanation = yield collection.find({a:2}).explain();
       test.ok(explanation != null);
 
       db.close();
@@ -563,7 +563,7 @@ exports.ensureIndexExampleWithCompountIndexWithGenerators = {
       test.equal(4, items.length);
 
       // Peform a query, with explain to show we hit the query
-      var explanation = yield collection.find({a:2}, {explain:true}).toArray();
+      var explanation = yield collection.find({a:2}).explain();
       test.ok(explanation != null);
 
       // Close db
@@ -652,8 +652,8 @@ exports.shouldPeformASimpleExplainQueryWithGenerators = {
       yield collection.insertMany([{a:1}, {a:2}, {a:3}], configuration.writeConcernMax());
 
       // Peform a simple find and return all the documents
-      var docs = yield collection.find({}, {explain:true}).toArray();
-      test.equal(1, docs.length);
+      var explain = yield collection.find({}).explain();
+      test.ok(explain != null);
 
       db.close();
       test.done();
@@ -695,14 +695,15 @@ exports.shouldPeformASimpleLimitSkipQueryWithGenerators = {
       yield collection.insertMany([{a:1, b:1}, {a:2, b:2}, {a:3, b:3}], configuration.writeConcernMax());
 
       // Peform a simple find and return all the documents
-      var docs = yield collection.find({}, {skip:1, limit:1, fields:{b:1}}).toArray();
-      test.equal(1, docs.length);
-      test.equal(null, docs[0].a);
-      test.equal(2, docs[0].b);
+      var docs = yield collection.find({})
+      .skip(1).limit(1).project({b:1}).toArray();
+        test.equal(1, docs.length);
+        test.equal(null, docs[0].a);
+        test.equal(2, docs[0].b);
 
-      // Close db
-      db.close();
-      test.done();
+        // Close db
+        db.close();
+        test.done();
     });
     // END
   }
@@ -924,7 +925,7 @@ exports.shouldCorrectlyPerformSimpleGeoNearCommandWithGenerators = {
  * @ignore
  */
 exports.shouldCorrectlyPerformSimpleGeoHaystackSearchCommandWithGenerators = {
-  metadata: { requires: { generators:true, topology: ["single", "replicaset"] } },
+  metadata: { requires: { generators:true, topology: ["single"] } },
 
   // The actual test we wish to run
   test: function(configuration, test) {
@@ -1466,7 +1467,7 @@ exports.shouldCorrectlyExecuteIndexExistsWithGenerators = {
  */
 exports.shouldCorrectlyShowTheResultsFromIndexInformationWithGenerators = {
   metadata: {
-    requires: { generators:true, topology: ["single", "replicaset"] }
+    requires: { generators:true, topology: ["single"] }
   },
 
   // The actual test we wish to run
@@ -1858,7 +1859,7 @@ exports.shouldCorrectlyRetriveCollectionOptionsWithGenerators = {
 exports['Should correctly execute parallelCollectionScan with multiple cursors with Generators'] = {
   // Add a tag that our runner can trigger on
   // in this case we are setting that node needs to be higher than 0.10.X to run
-  metadata: { requires: { generators:true, mongodb: ">2.5.5", topology: ["single", "replicaset"] } },
+  metadata: { requires: { generators:true, mongodb: ">2.5.5", topology: ["single"] } },
 
   // The actual test we wish to run
   test: function(configuration, test) {
@@ -3191,7 +3192,7 @@ exports.shouldCreateOnDbComplexIndexOnTwoFieldsWithGenerators = {
       test.equal(4, items.length);
 
       // Peform a query, with explain to show we hit the query
-      var explanation = yield collection.find({a:2}, {explain:true}).toArray();
+      var explanation = yield collection.find({a:2}).explain();
       test.ok(explanation != null);
 
       db.close();
@@ -3243,7 +3244,7 @@ exports.shouldCreateComplexEnsureIndexDbWithGenerators = {
       test.equal(4, items.length);
 
       // Peform a query, with explain to show we hit the query
-      var explanation = yield collection.find({a:2}, {explain:true}).toArray();
+      var explanation = yield collection.find({a:2}).explain();
       test.ok(explanation != null);
 
       db.close();

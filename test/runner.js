@@ -225,8 +225,17 @@ var runner = new Runner({
 });
 
 var testFiles =[
+  // Logging tests
+    '/test/functional/logger_tests.js'
+
+  // APM tests
+  , '/test/functional/apm_tests.js'
+
+  // Replicaset read concern (make sure no illegal state due to teardown tests)
+  , '/test/functional/readconcern_tests.js'
+
   // Promise tests
-    '/test/functional/promises_db_tests.js'
+  , '/test/functional/promises_db_tests.js'
   , '/test/functional/promises_collection_tests.js'
   , '/test/functional/promises_cursor_tests.js'
   , '/test/functional/operation_promises_example_tests.js'
@@ -261,13 +270,13 @@ var testFiles =[
   , '/test/functional/operation_example_tests.js'
   , '/test/functional/crud_api_tests.js'
   , '/test/functional/reconnect_tests.js'
-
-  // Logging tests
-  , '/test/functional/logger_tests.js'
+  , '/test/functional/find_and_modify_tests.js'
+  , '/test/functional/document_validation_tests.js'
+  , '/test/functional/ignore_undefined_tests.js'
 
   // Replicaset tests
-  , '/test/functional/replset_operations_tests.js'
   , '/test/functional/replset_read_preference_tests.js'
+  , '/test/functional/replset_operations_tests.js'
   , '/test/functional/replset_failover_tests.js'
   , '/test/functional/replset_connection_tests.js'
 
@@ -292,9 +301,6 @@ var testFiles =[
 
   // Authentication Tests
   , '/test/functional/authentication_tests.js'
-
-  // APM tests
-  , '/test/functional/apm_tests.js'
 ]
 
 // Check if we support es6 generators
@@ -433,32 +439,6 @@ if(argv.t == 'functional') {
         serverOptions.sslValidate = false;
         return new m.Server(host, port, serverOptions);
       },
-    });
-  } else if(argv.e == 'heap') {
-    // Create single server instance running heap storage engine
-    config = createConfiguration({
-        manager: function() {
-          var ServerManager = require('mongodb-tools').ServerManager;
-          // Return manager
-          return new ServerManager({
-              host: 'localhost'
-            , port: 27017
-            , storageEngine: 'heap1'
-          });
-        },
-    });
-  } else if(argv.e == 'wiredtiger') {
-    // Create single server instance running heap storage engine
-    config = createConfiguration({
-        manager: function() {
-          var ServerManager = require('mongodb-tools').ServerManager;
-          // Return manager
-          return new ServerManager({
-              host: 'localhost'
-            , port: 27017
-            , storageEngine: 'wiredtiger'
-          });
-        },
     });
   } else if(argv.e == 'auth') {
     // Create ssl server

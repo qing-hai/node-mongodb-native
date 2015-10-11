@@ -2080,8 +2080,156 @@ exports['should return error on ordered insert with multiple unique key constrai
   }
 }
 
+exports['Correctly allow forceServerObjectId for insertOne'] = {
+  metadata: { requires: { topology: ['single'] } },
 
+  // The actual test we wish to run
+  test: function(configuration, test) {
+    var started = [];
+    var succeeded = [];
+    var failed = [];
+    var callbackTriggered = false;
 
+    var listener = require('../..').instrument(function(err, instrumentations) {});
+    listener.on('started', function(event) {
+      if(event.commandName == 'insert')
+        started.push(event);
+    });
+
+    listener.on('succeeded', function(event) {
+      if(event.commandName == 'insert')
+        succeeded.push(event);
+    });
+
+    var db = configuration.newDbInstance({w:1}, {poolSize:1, auto_reconnect:false});
+    db.open(function(err, db) {
+      test.equal(null, err);
+
+      db.collection('apm_test').insertOne({a:1}, {forceServerObjectId:true}).then(function(r) {
+        test.equal(null, err);
+        test.equal(undefined, started[0].command.documents[0]._id);
+        listener.uninstrument();
+
+        db.close();
+        test.done();
+      });
+    });
+  }
+}
+
+exports['Correctly allow forceServerObjectId for insertMany'] = {
+  metadata: { requires: { topology: ['single'] } },
+
+  // The actual test we wish to run
+  test: function(configuration, test) {
+    var started = [];
+    var succeeded = [];
+    var failed = [];
+    var callbackTriggered = false;
+
+    var listener = require('../..').instrument(function(err, instrumentations) {});
+    listener.on('started', function(event) {
+      if(event.commandName == 'insert')
+        started.push(event);
+    });
+
+    listener.on('succeeded', function(event) {
+      if(event.commandName == 'insert')
+        succeeded.push(event);
+    });
+
+    var db = configuration.newDbInstance({w:1}, {poolSize:1, auto_reconnect:false});
+    db.open(function(err, db) {
+      test.equal(null, err);
+
+      db.collection('apm_test').insertMany([{a:1}], {forceServerObjectId:true}).then(function(r) {
+        test.equal(null, err);
+        test.equal(undefined, started[0].command.documents[0]._id);
+
+        listener.uninstrument();
+        db.close();
+        test.done();
+      });
+    });
+  }
+}
+
+exports['Correctly allow forceServerObjectId for insertMany'] = {
+  metadata: { requires: { topology: ['single'] } },
+
+  // The actual test we wish to run
+  test: function(configuration, test) {
+    var started = [];
+    var succeeded = [];
+    var failed = [];
+    var callbackTriggered = false;
+
+    var listener = require('../..').instrument(function(err, instrumentations) {});
+    listener.on('started', function(event) {
+      if(event.commandName == 'insert')
+        started.push(event);
+    });
+
+    listener.on('succeeded', function(event) {
+      if(event.commandName == 'insert')
+        succeeded.push(event);
+    });
+
+    var db = configuration.newDbInstance({w:1}, {poolSize:1, auto_reconnect:false});
+    db.open(function(err, db) {
+      test.equal(null, err);
+
+      db.collection('apm_test').insertMany([{a:1}], {forceServerObjectId:true}).then(function(r) {
+        test.equal(null, err);
+        test.equal(undefined, started[0].command.documents[0]._id);
+
+        listener.uninstrument();
+        db.close();
+        test.done();
+      });
+    });
+  }
+}
+
+exports['Insert document including sub documents'] = {
+  metadata: { requires: { topology: ['single'] } },
+
+  // The actual test we wish to run
+  test: function(configuration, test) {
+    var db = configuration.newDbInstance({w:1}, {poolSize:1, auto_reconnect:false});
+    db.open(function(err, db) {
+      test.equal(null, err);
+
+      var shipment = {
+        shipment1: 'a'
+      }
+
+      var supplier = {
+        shipments: [shipment]
+      }
+
+      var product = {
+        suppliers: [supplier]
+      }
+
+      var doc = {
+        a: 1, products: [product]
+      }
+
+      db.collection('sub_documents').insertOne(doc, function(err, r) {
+        test.equal(null, err);
+        
+        db.collection('sub_documents').find({}).next(function(err, v) {
+          test.equal(null, err);
+          test.equal('a', v.products[0].suppliers[0].shipments[0].shipment1);
+
+          db.close();
+          test.done();
+        });
+      });
+    });
+  }
+}
 
 
 

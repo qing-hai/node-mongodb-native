@@ -25,6 +25,7 @@ connect.Cursor = require('./lib/cursor');
 connect.BSON = core.BSON.BSONPure.BSON;
 connect.Binary = core.BSON.Binary;
 connect.Code = core.BSON.Code;
+connect.Map = core.BSON.Map;
 connect.DBRef = core.BSON.DBRef;
 connect.Double = core.BSON.Double;
 connect.Long = core.BSON.Long;
