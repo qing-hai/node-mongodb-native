@@ -1,8 +1,34 @@
-2.0.46
+2.1.0
 -----------------
-* Updated mongodb-core to 1.2.17.
+* Implements the connection string specification, https://github.com/mongodb/specifications/blob/master/source/connection-string/connection-string-spec.rst.
+* Implements the new GridFS specification, https://github.com/mongodb/specifications/blob/master/source/gridfs/gridfs-spec.rst.
+* Full MongoDB 3.2 support.
+* NODE-601 Added maxAwaitTimeMS support for 3.2 getMore to allow for custom timeouts on tailable cursors.
+
+2.0.48 11-07-2015
+-----------------
+* GridFS no longer performs any deletes when writing a brand new file that does not have any previous <db>.fs.chunks or <db>.fs.files documents.
+* Updated mongodb-core to 1.2.21.
+* Hardened the checking for replicaset equality checks.
+* OpReplay flag correctly set on Wire protocol query.
+* Mongos load balancing added, introduced localThresholdMS to control the feature.
+* Kerberos now a peerDependency, making it not install it by default in Node 5.0 or higher.
+
+2.0.47 10-28-2015
+-----------------
+* Updated mongodb-core to 1.2.20.
+* Fixed bug in arbiter connection capping code.
+* NODE-599 correctly handle arrays of server tags in order of priority.
+* Fix for 2.6 wire protocol handler related to readPreference handling.
+* Added maxAwaitTimeMS support for 3.2 getMore to allow for custom timeouts on tailable cursors.
+* Make CoreCursor check for $err before saying that 'next' succeeded (Issue #53, https://github.com/vkarpov15).
+
+2.0.46 10-15-2015
+-----------------
+* Updated mongodb-core to 1.2.19.
 * NODE-578 Order of sort fields is lost for numeric field names.
 * Expose BSON Map (ES6 Map or polyfill).
+* Minor fixes for APM support to pass extended APM test suite.
 
 2.0.45 09-30-2015
 -----------------

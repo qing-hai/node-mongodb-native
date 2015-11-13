@@ -231,6 +231,9 @@ var testFiles =[
   // APM tests
   , '/test/functional/apm_tests.js'
 
+  // Connection spec tests
+  , '/test/functional/connection_string_spec_tests.js'
+
   // Replicaset read concern (make sure no illegal state due to teardown tests)
   , '/test/functional/readconcern_tests.js'
 
@@ -301,6 +304,9 @@ var testFiles =[
 
   // Authentication Tests
   , '/test/functional/authentication_tests.js'
+
+  // GridFS
+  , '/test/functional/gridfs_stream_tests.js'
 ]
 
 // Check if we support es6 generators
@@ -401,7 +407,7 @@ if(argv.t == 'functional') {
         port: 50000,
         host: 'localhost',
         url: "mongodb://%slocalhost:50000/integration_tests",
-        writeConcernMax: {w: 'majority', wtimeout: 30000},
+        writeConcernMax: {w: 3, wtimeout: 30000},
 
         topology: function(host, port, serverOptions) {
           var m = require('../');
@@ -501,6 +507,11 @@ if(argv.t == 'functional') {
     rimraf.sync('./data');
     rimraf.sync('./db');
   } catch(err) {
+  }
+
+  // Skip the version download and use local mongod in PATH
+  if(argv.l) {
+    return runner.run(config);
   }
 
   // Kill any running MongoDB processes and

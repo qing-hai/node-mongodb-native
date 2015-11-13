@@ -397,16 +397,16 @@ exports.shouldCorrectlyFindEmbeddedDocument = {
              collection.find({ 'a.id': 10 }).toArray(function(err, documents) {
                test.equal(1, documents.length);
                test.equal('bar', documents[0].b);
-             });
 
-             // test using string value
-             collection.find({ 'a.value': 'foo' }).toArray(function(err, documents) {
-               // should yield 2 documents
-               test.equal(2, documents.length);
-               test.equal('bar', documents[0].b);
-               test.equal('bar2', documents[1].b);
-               db.close();
-               test.done();
+               // test using string value
+               collection.find({ 'a.value': 'foo' }).toArray(function(err, documents) {
+                 // should yield 2 documents
+                 test.equal(2, documents.length);
+                 test.equal('bar', documents[0].b);
+                 test.equal('bar2', documents[1].b);
+                 db.close();
+                 test.done();
+               });
              });
           });
         });
@@ -2325,6 +2325,106 @@ exports['should correctly execute a findAndModifyWithAWriteConcern'] = {
               db.close();
               test.done();
           })
+        });
+      });
+    });
+  }
+}
+
+/**
+ * Test a simple find
+ * @ignore
+ */
+exports['should execute query using batchSize of 0'] = {
+  metadata: { requires: { topology: ['single', 'replicaset', 'sharded', 'ssl', 'heap', 'wiredtiger'] } },
+
+  // The actual test we wish to run
+  test: function(configuration, test) {
+    var db = configuration.newDbInstance(configuration.writeConcernMax(), {poolSize:1});
+    db.open(function(err, db) {
+      var collection = db.collection('test_find_simple_batchsize_0', function(err, collection) {
+        var doc1 = null;
+        var doc2 = null;
+
+        // Insert some test documents
+        collection.insert([{a:2}, {b:3}, {b:4}], configuration.writeConcernMax(), function(err, r) {
+
+          // Ensure correct insertion testing via the cursor and the count function
+          collection.find().batchSize(-5).toArray(function(err, documents) {
+            console.dir(err)
+            test.equal(null, err);
+            test.equal(3, documents.length);
+            // Let's close the db
+            db.close();
+            test.done();
+          });
+        });
+      });
+    });
+  }
+}
+
+/**
+ * Test a simple find
+ * @ignore
+ */
+exports['should execute query using limit of 0'] = {
+  metadata: { requires: { topology: ['single', 'replicaset', 'sharded', 'ssl', 'heap', 'wiredtiger'] } },
+
+  // The actual test we wish to run
+  test: function(configuration, test) {
+    var db = configuration.newDbInstance(configuration.writeConcernMax(), {poolSize:1});
+    db.open(function(err, db) {
+      var collection = db.collection('test_find_simple_limit_0', function(err, collection) {
+        var doc1 = null;
+        var doc2 = null;
+
+        // Insert some test documents
+        collection.insert([{a:2}, {b:3}, {b:4}], configuration.writeConcernMax(), function(err, r) {
+
+          // Ensure correct insertion testing via the cursor and the count function
+          collection.find().limit(-5).toArray(function(err, documents) {
+            test.equal(null, err);
+            test.equal(3, documents.length);
+
+            // Let's close the db
+            db.close();
+            test.done();
+          });
+        });
+      });
+    });
+  }
+}
+
+/**
+ * Test a simple find
+ * @ignore
+ */
+exports['should execute query using $elemMatch'] = {
+  metadata: { requires: { topology: ['single', 'replicaset', 'sharded', 'ssl', 'heap', 'wiredtiger'] } },
+
+  // The actual test we wish to run
+  test: function(configuration, test) {
+    var db = configuration.newDbInstance(configuration.writeConcernMax(), {poolSize:1});
+    db.open(function(err, db) {
+      var collection = db.collection('elem_match_test', function(err, collection) {
+        var doc1 = null;
+        var doc2 = null;
+
+        // Insert some test documents
+        collection.insert([{ _id: 1, results: [ 82, 85, 88 ] },
+          { _id: 2, results: [ 75, 88, 89 ] }], configuration.writeConcernMax(), function(err, r) {
+
+          // Ensure correct insertion testing via the cursor and the count function
+          collection.find({ results: { $elemMatch: { $gte: 80, $lt: 85 } } }).toArray(function(err, documents) {
+            test.equal(null, err);
+            test.deepEqual([ { _id: 1, results: [ 82, 85, 88 ] } ], documents);
+
+            // Let's close the db
+            db.close();
+            test.done();
+          });
         });
       });
     });
