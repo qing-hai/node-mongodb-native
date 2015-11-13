@@ -414,4 +414,3 @@ This concludes the QuickStart of connecting and performing some Basic operations
  * [MongoDB Documentation](http://mongodb.org/)
  * [Read about Schemas](http://learnmongodbthehardway.com/)
  * [Star us on GitHub](https://github.com/mongodb/node-mongodb-native)
->>>>>>> remotes/fork/2.1
