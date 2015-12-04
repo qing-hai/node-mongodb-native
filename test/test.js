@@ -2,10 +2,13 @@
 var mongo = require('../index');
 
 mongo.connect("mongodb://localhost/test",{server:{promoteLongs:false}}, function(err, db) {
-	db.collection("test4").
-	findOne(mongo.ObjectId("56034dae9b835b3ee6a52cb7"),{int64:1})
-	.then(function(rst) {
-		console.log(rst);
+	var bulk = db.collection("cats").initializeUnorderedBulkOp();
+	bulk.insert({_id:"101"})
+	bulk.insert({_id:"101"})
+	bulk.insert({_id:"102"})
+	bulk.insert({_id:"102"})
+	bulk.execute().catch(function(err){
+		console.log("err", err);
 		process.exit();
 	})
 })
