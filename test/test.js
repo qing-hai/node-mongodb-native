@@ -1,14 +1,12 @@
 
 var mongo = require('../index');
 
-mongo.connect("mongodb://localhost/test",{server:{promoteLongs:false}}, function(err, db) {
-	var bulk = db.collection("cats").initializeUnorderedBulkOp();
-	bulk.insert({_id:"101"})
-	bulk.insert({_id:"101"})
-	bulk.insert({_id:"102"})
-	bulk.insert({_id:"102"})
-	bulk.execute().catch(function(err){
-		console.log("err", err);
-		process.exit();
-	})
+mongo.connect("mongodb://localhost:27017/admin",
+	{server:{promoteLongs:false,sslValidate:false}}, function(err, db) {
+	if (err)
+		console.log(err);
+	else
+		console.log("success");
+		
+	process.exit();
 })
