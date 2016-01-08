@@ -1,6 +1,6 @@
 {
   "name": "mb-mongodb",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "MongoDB legacy driver emulation layer on top of mongodb-core, for mongobooster",
   "main": "index.js",
   "repository": {
