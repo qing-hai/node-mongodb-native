@@ -24,6 +24,7 @@ connect.Cursor = require('./lib/cursor');
 connect.GridFSBucket = require('./lib/gridfs-stream');
 
 // BSON types exported
+connect.BSON = core.BSON.BSONPure.BSON;
 connect.Binary = core.BSON.Binary;
 connect.Code = core.BSON.Code;
 connect.Map = core.BSON.Map;
