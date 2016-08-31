@@ -20,7 +20,7 @@ exports['Should correctly connect with MongoClient.connect using Promise'] = {
       : f('%s?%s', url, 'maxPoolSize=100');
 
     MongoClient.connect(url).then(function(db) {
-      test.equal(100, db.serverConfig.connections().length);
+      test.equal(1, db.serverConfig.connections().length);
 
       db.close();
       test.done();
@@ -214,10 +214,13 @@ exports['Should correctly rename and drop collection using Promise'] = {
       db.createCollection('promiseCollection1').then(function(col) {
         test.ok(col != null);
 
+        // console.log("--- 0")
         db.renameCollection('promiseCollection1', 'promiseCollection2').then(function(col) {
+          // console.log("--- 1")
           test.ok(col != null);
 
           db.dropCollection('promiseCollection2').then(function(r) {
+            // console.log("--- 2")
             test.ok(r);
 
             db.close();

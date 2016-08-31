@@ -649,8 +649,13 @@ exports['Should Correctly Fail Unordered Batch Operation due to illegal Operatio
       // Get the collection
       var col = db.collection('batch_write_unordered_ops_legacy_5');
 
+      // Write concern
+      var writeConcern = configuration.writeConcernMax();
+      writeConcern.unique = true;
+      writeConcern.sparse = false;
+
       // Add unique index on b field causing all updates to fail
-      col.ensureIndex({b:1}, {unique:true, sparse:false}, function(err, result) {
+      col.ensureIndex({b:1}, writeConcern, function(err, result) {
         test.equal(err, null);
 
         // Initialize the unordered Batch
@@ -699,8 +704,13 @@ exports['Should Correctly Execute Unordered Batch with duplicate key errors on u
       // Get the collection
       var col = db.collection('batch_write_unordered_ops_legacy_6');
 
+      // Write concern
+      var writeConcern = configuration.writeConcernMax();
+      writeConcern.unique = true;
+      writeConcern.sparse = false;
+
       // Add unique index on b field causing all updates to fail
-      col.ensureIndex({b:1}, {unique:true, sparse:false}, function(err, result) {
+      col.ensureIndex({b:1}, writeConcern, function(err, result) {
         test.equal(err, null);
 
         // Initialize the unordered Batch
@@ -716,14 +726,16 @@ exports['Should Correctly Execute Unordered Batch with duplicate key errors on u
 
         // Execute the operations
         batch.execute(configuration.writeConcernMax(),function(err, result) {
+          // console.log("------------------------------------------------------")
+          // console.dir(err)
+          // console.log(JSON.stringify(result, null, 2))
           // Test basic settings
           test.equal(2, result.nInserted);
           test.equal(true, result.hasWriteErrors());
-          test.ok(1, result.getWriteErrorCount());
+          test.ok(result.getWriteErrorCount() == 4 || result.getWriteErrorCount() == 3);
 
           // Individual error checking
           var error = result.getWriteErrorAt(0);
-          test.equal(2, error.index);
           test.ok(error.code == 11000 || error.code == 11001);
           test.ok(error.errmsg != null);
 
@@ -757,6 +769,7 @@ exports['Should Correctly Execute Unordered Batch of with upserts causing duplic
         batch.find({a:1}).update({$set: {b: 1}});
         batch.find({a:2}).upsert().update({$set: {b: 2}});
         batch.find({a:3}).upsert().update({$set: {b: 3}});
+        batch.find({a:1}).update({$set: {b: 1}});
         batch.insert({b:1});
 
         // Execute the operations
@@ -771,7 +784,6 @@ exports['Should Correctly Execute Unordered Batch of with upserts causing duplic
 
           // Individual error checking
           var error = result.getWriteErrorAt(0);
-          test.equal(1, error.index);
           test.ok(error.code == 11000 || error.code == 11001);
           test.ok(error.errmsg != null);
           test.equal(1, error.getOperation().u['$set'].b);
@@ -928,35 +940,6 @@ exports['Should correctly execute unordered batch using w:0'] = {
  * Ordered
  *
  *******************************************************************/
-// exports['Should fail with journal write concern due to --nojournal ordered'] = {
-//   metadata: { requires: { topology: 'single', mongodb: '>2.5.4' }},
-//
-//   // The actual test we wish to run
-//   test: function(configuration, test) {
-//     var db = configuration.newDbInstance({w:1}, {poolSize:1, auto_reconnect:false});
-//     db.open(function(err, db) {
-//       // Get the collection
-//       var col = db.collection('batch_write_concerns_ops_0');
-//       // Initialize the Ordered Batch
-//       var batch = col.initializeOrderedBulkOp();
-//       // Add some operations to be executed in order
-//       batch.insert({a:1});
-//       batch.insert({a:2});
-//
-//       // Execute the operations
-//       batch.execute({j: true}, function(err, result) {
-//         test.ok(err != null);
-//         test.ok(err.code != null);
-//         test.ok(err.errmsg != null);
-//
-//         // Finish up test
-//         db.close();
-//         test.done();
-//       });
-//     });
-//   }
-// }
-
 exports['Should fail with w:2 and wtimeout write concern due single mongod instance ordered'] = {
   metadata: { requires: { topology: 'single', mongodb: '>2.5.4' }},
 
@@ -974,6 +957,7 @@ exports['Should fail with w:2 and wtimeout write concern due single mongod insta
 
       // Execute the operations
       batch.execute({w:2, wtimeout:1000}, function(err, result) {
+        // console.dir(err)
         test.ok(err != null);
         test.ok(err.code != null);
         test.ok(err.errmsg != null);
@@ -986,40 +970,49 @@ exports['Should fail with w:2 and wtimeout write concern due single mongod insta
   }
 }
 
+exports['Should correctly handle bulk operation split for ordered bulk operation'] = {
+  // Add a tag that our runner can trigger on
+  // in this case we are setting that node needs to be higher than 0.10.X to run
+  metadata: {
+    requires: {
+        mongodb: ">=2.6.0"
+      , topology: 'single'
+      , node: ">0.10.0"
+    }
+  },
+
+  // The actual test we wish to run
+  test: function(configure, test) {
+    var db = configure.newDbInstance({w:1}, {poolSize:1});
+
+    db.open(function(err, db) {
+      var docs = [];
+      for(var i = 0; i < 5; i++) {
+        docs.push({
+          s: new Array(6000000).join('x')
+        });
+      }
+
+      db.collection('bigdocs_ordered').insertMany(docs, function(err, r) {
+        test.equal(null, err);
+
+        db.collection('bigdocs_ordered').count(function(err, c) {
+          test.equal(null, err);
+          test.equal(5, c);
+
+          db.close();
+          test.done();
+        });
+      });
+    });
+  }
+}
+
 /*******************************************************************
  *
  * Unordered
  *
  *******************************************************************/
-// exports['Should fail with journal write concern due to --nojournal unordered'] = {
-//   metadata: { requires: { topology: 'single', mongodb: '>2.5.4' }},
-//
-//   // The actual test we wish to run
-//   test: function(configuration, test) {
-//     var db = configuration.newDbInstance({w:1}, {poolSize:1, auto_reconnect:false});
-//     db.open(function(err, db) {
-//       // Get the collection
-//       var col = db.collection('batch_write_concerns_ops_0');
-//       // Initialize the Ordered Batch
-//       var batch = col.initializeUnorderedBulkOp();
-//       // Add some operations to be executed in order
-//       batch.insert({a:1});
-//       batch.insert({a:2});
-//
-//       // Execute the operations
-//       batch.execute({j: true}, function(err, result) {
-//         test.ok(err != null);
-//         test.ok(err.code != null);
-//         test.ok(err.errmsg != null);
-//
-//         // Finish up test
-//         db.close();
-//         test.done();
-//       });
-//     });
-//   }
-// }
-
 exports['Should fail with w:2 and wtimeout write concern due single mongod instance unordered'] = {
   metadata: { requires: { topology: 'single', mongodb: '>2.5.4' }},
 
@@ -1194,6 +1187,44 @@ exports['should correctly split ordered bulk batch'] = {
           operation.find({_id: documents[i]._id}).replaceOne({name: 'joe' + i});
         }
       }
+    });
+  }
+}
+
+exports['Should correctly handle bulk operation split for unordered bulk operation'] = {
+  // Add a tag that our runner can trigger on
+  // in this case we are setting that node needs to be higher than 0.10.X to run
+  metadata: {
+    requires: {
+        mongodb: ">=2.6.0"
+      , topology: 'single'
+      , node: ">0.10.0"
+    }
+  },
+
+  // The actual test we wish to run
+  test: function(configure, test) {
+    var db = configure.newDbInstance({w:1}, {poolSize:1});
+
+    db.open(function(err, db) {
+      var docs = [];
+      for(var i = 0; i < 5; i++) {
+        docs.push({
+          s: new Array(6000000).join('x')
+        });
+      }
+
+      db.collection('bigdocs_unordered').insertMany(docs, {ordered:false}, function(err, r) {
+        test.equal(null, err);
+
+        db.collection('bigdocs_unordered').count(function(err, c) {
+          test.equal(null, err);
+          test.equal(5, c);
+
+          db.close();
+          test.done();
+        });
+      });
     });
   }
 }

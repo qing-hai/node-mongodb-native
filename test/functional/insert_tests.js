@@ -1726,7 +1726,7 @@ exports.shouldCorrectlyHonorPromoteLongFalseNativeBSON = {
 
     var o = configuration.writeConcernMax();
     o.promoteLongs = false;
-    var db = configuration.newDbInstance(o, {native_parser:true})
+    var db = configuration.newDbInstance(o, {native_parser:true, promoteLongs: false})
     db.open(function(err, db) {
       db.collection('shouldCorrectlyHonorPromoteLong').insert({
             doc: Long.fromNumber(10)
@@ -1738,6 +1738,43 @@ exports.shouldCorrectlyHonorPromoteLongFalseNativeBSON = {
             test.equal(null, err);
             test.ok(doc.doc instanceof Long);
             test.ok(doc.array[0][0] instanceof Long);
+            db.close();
+            test.done();
+          });
+      });
+    });
+  }
+}
+
+exports.shouldCorrectlyHonorPromoteLongFalseNativeBSONWithGetMore = {
+  // Add a tag that our runner can trigger on
+  // in this case we are setting that node needs to be higher than 0.10.X to run
+  metadata: { requires: { topology: ['single', 'replicaset', 'sharded', 'ssl', 'heap', 'wiredtiger'] } },
+
+  // The actual test we wish to run
+  test: function(configuration, test) {
+    var Long = configuration.require.Long;
+
+    var o = configuration.writeConcernMax();
+    o.promoteLongs = false;
+    // var db = configuration.newDbInstance(o, {native_parser:true, promoteLongs:false})
+    var db = configuration.newDbInstance(o, {native_parser:true})
+    db.open(function(err, db) {
+      db.collection('shouldCorrectlyHonorPromoteLongFalseNativeBSONWithGetMore').insertMany([
+        {a: Long.fromNumber(10)}, {a: Long.fromNumber(10)}, {a: Long.fromNumber(10)}, {a: Long.fromNumber(10)},
+        {a: Long.fromNumber(10)}, {a: Long.fromNumber(10)}, {a: Long.fromNumber(10)}, {a: Long.fromNumber(10)},
+        {a: Long.fromNumber(10)}, {a: Long.fromNumber(10)}, {a: Long.fromNumber(10)}, {a: Long.fromNumber(10)},
+        {a: Long.fromNumber(10)}, {a: Long.fromNumber(10)}, {a: Long.fromNumber(10)}, {a: Long.fromNumber(10)},
+        {a: Long.fromNumber(10)}, {a: Long.fromNumber(10)}, {a: Long.fromNumber(10)}, {a: Long.fromNumber(10)},
+        {a: Long.fromNumber(10)}, {a: Long.fromNumber(10)}, {a: Long.fromNumber(10)}, {a: Long.fromNumber(10)},
+      ], function(err, doc) {
+          test.equal(null, err);
+
+          db.collection('shouldCorrectlyHonorPromoteLongFalseNativeBSONWithGetMore').find({}).batchSize(2).toArray(function(err, docs) {
+            test.equal(null, err);
+            var doc = docs.pop();
+
+            test.ok(doc.a instanceof Long);
             db.close();
             test.done();
           });
