@@ -118,10 +118,10 @@ var Configuration = function(options) {
               });
             });
           }).catch(function(err) {
-            console.log(err.stack);
+            // console.log(err.stack);
           });
         }).catch(function(err) {
-          console.log(err.stack);
+          // console.log(err.stack);
         });
       },
 
@@ -318,6 +318,7 @@ var testFiles = [
   , '/test/functional/ssl_mongoclient_tests.js'
   , '/test/functional/ssl_validation_tests.js'
   , '/test/functional/ssl_x509_connect_tests.js'
+  , '/test/functional/sni_tests.js'
 
   // SCRAM tests
   , '/test/functional/scram_tests.js'
@@ -356,6 +357,7 @@ try {
   testFiles.push('/test/functional/max_staleness_tests.js');
   testFiles.push('/test/functional/buffering_proxy_tests.js');
   testFiles.push('/test/functional/view_tests.js');
+  testFiles.push('/test/functional/crud_spec_tests.js');
 } catch(err) {}
 
 // Add all the tests to run
@@ -451,15 +453,15 @@ if(argv.t == 'functional') {
       return runner.run(Configuration(_config));
     }
 
-    console.log("!!!!!!!!!!! RUN 0")
+    // console.log("!!!!!!!!!!! RUN 0")
     // Kill any running MongoDB processes and
     // `install $MONGODB_VERSION` || `use existing installation` || `install stable`
     m(function(err){
-      console.log("!!!!!!!!!!! RUN 1")
+      // console.log("!!!!!!!!!!! RUN 1")
       if(err) return console.error(err) && process.exit(1);
 
       m.current(function(err, version){
-        console.log("!!!!!!!!!!! RUN 2")
+        // console.log("!!!!!!!!!!! RUN 2")
         if(err) return console.error(err) && process.exit(1);
         console.log('Running tests against MongoDB version `%s`', version);
         // Run the configuration
@@ -652,7 +654,7 @@ if(argv.t == 'functional') {
 
   //
   // Single server
-  if(!argv.e || argv.e == 'kerberos' || argv.e == 'ldap') {
+  if(!argv.e || (argv.e == 'kerberos' || argv.e == 'ldap' || argv.e == 'sni')) {
     config = {
         host: 'localhost'
       , port: 27017

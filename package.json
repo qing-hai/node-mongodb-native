@@ -1,6 +1,6 @@
 {
   "name": "mb-mongodb",
-  "version": "2.2.9-2",
+  "version": "2.2.11-1",
   "description": "MongoDB legacy driver emulation layer on top of mongodb-core, for mongobooster",
   "main": "index.js",
   "repository": {
@@ -14,18 +14,19 @@
   ],
   "dependencies": {
     "es6-promise": "3.2.1",
-    "mongodb-core": "2.0.11",
+    "mongodb-core": "2.0.13",
     "readable-stream": "2.1.5"
   },
   "devDependencies": {
     "JSONStream": "^1.0.7",
     "betterbenchmarks": "^0.1.0",
-    "bluebird": "3.4.3",
+    "bluebird": "3.4.6",
     "bson": "^0.5.1",
     "cli-table": "^0.3.1",
     "co": "4.6.0",
     "colors": "^1.1.2",
     "coveralls": "^2.11.6",
+    "eslint": "^3.8.1",
     "event-stream": "^3.3.2",
     "gleak": "0.5.0",
     "integra": "0.1.8",
@@ -33,7 +34,7 @@
     "ldjson-stream": "^1.2.1",
     "mongodb-extended-json": "1.7.1",
     "mongodb-topology-manager": "1.0.x",
-    "mongodb-version-manager": "^1.0.6",
+    "mongodb-version-manager": "christkv/mongodb-version-manager#master",
     "nyc": "^8.1.0",
     "optimist": "0.6.1",
     "rimraf": "2.5.4",
@@ -50,7 +51,8 @@
   },
   "scripts": {
     "test": "node test/runner.js -t functional",
-    "coverage": "node_modules/.bin/nyc node test/runner.js -t functional && node_modules/.bin/nyc report --reporter=text-lcov | node_modules/.bin/coveralls"
+    "coverage": "node_modules/.bin/nyc node test/runner.js -t functional && node_modules/.bin/nyc report --reporter=text-lcov | node_modules/.bin/coveralls",
+    "lint": "eslint lib"
   },
   "nyc": {
     "include": [
