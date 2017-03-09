@@ -1,6 +1,6 @@
 {
   "name": "qh-mongodb",
-  "version": "2.2.24",
+  "version": "2.2.24-1",
   "description": "The official MongoDB driver for Node.js, modified by qinghai",
   "main": "index.js",
   "repository": {
