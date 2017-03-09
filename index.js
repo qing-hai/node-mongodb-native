@@ -27,6 +27,7 @@ connect.CoreServer = require('mongodb-core').Server;
 connect.CoreConnection = require('mongodb-core').Connection;
 
 // BSON types exported
+connect.BSON = core.BSON.BSONPure.BSON;
 connect.Binary = core.BSON.Binary;
 connect.Code = core.BSON.Code;
 connect.Map = core.BSON.Map;

@@ -1,11 +1,11 @@
 {
-  "name": "mongodb",
+  "name": "mb-qh-mongodb",
   "version": "2.2.24",
-  "description": "The official MongoDB driver for Node.js",
+  "description": "The official MongoDB driver for Node.js, modified by qinghai",
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git@github.com:mongodb/node-mongodb-native.git"
+    "url": "git@github.com:qing-hai/node-mongodb-native.git"
   },
   "keywords": [
     "mongodb",
